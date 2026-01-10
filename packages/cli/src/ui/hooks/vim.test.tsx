@@ -1344,6 +1344,32 @@ describe('useVim hook', () => {
         expect.objectContaining(key),
       );
     });
+
+    it('should pass through ctrl+x in NORMAL mode', () => {
+      mockVimContext.vimMode = 'NORMAL';
+      const { result } = renderVimHook();
+
+      const handled = result.current.handleInput(
+        createKey({ name: 'x', ctrl: true }),
+      );
+
+      expect(handled).toBe(false);
+    });
+
+    it('should pass through ctrl+x in INSERT mode', async () => {
+      mockVimContext.vimMode = 'INSERT';
+      const { result } = renderVimHook();
+
+      await waitFor(() => {
+        expect(result.current.mode).toBe('INSERT');
+      });
+
+      const handled = result.current.handleInput(
+        createKey({ name: 'x', ctrl: true }),
+      );
+
+      expect(handled).toBe(false);
+    });
   });
 
   // Line operations (dd, cc) are tested in text-buffer.test.ts
