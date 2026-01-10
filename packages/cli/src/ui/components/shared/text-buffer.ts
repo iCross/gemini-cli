@@ -5,6 +5,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { parse } from 'shell-quote';
 import fs from 'node:fs';
 import os from 'node:os';
 import pathMod from 'node:path';
@@ -2167,7 +2168,17 @@ export function useTextBuffer({
       const wasRaw = stdin?.isRaw ?? false;
       try {
         setRawMode?.(false);
-        const { status, error } = spawnSync(editor, [filePath], {
+
+        const parsed = parse(editor);
+        const [cmd, ...args] = parsed.filter(
+          (entry): entry is string => typeof entry === 'string',
+        );
+
+        if (!cmd) {
+          throw new Error(`Invalid editor command: ${editor}`);
+        }
+
+        const { status, error } = spawnSync(cmd, [...args, filePath], {
           stdio: 'inherit',
         });
         if (error) throw error;
